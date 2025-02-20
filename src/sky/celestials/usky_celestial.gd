@@ -104,7 +104,7 @@ var lighting_energy_curve: Curve = null:
 #endregion
 
 var direction: Vector3:
-	get: return -(transform.basis * Vector3.FORWARD)
+	get: return -(basis * Vector3.FORWARD)
 
 var _parent
 var parent:
@@ -127,18 +127,23 @@ func _on_parented() -> void:
 	_parent = get_parent()
 
 func _on_enter_tree() -> void:
+	
 	pass
+	#mie_color = mie_color
+	#mie_intensity = mie_intensity
+	#mie_anisotropy = mie_anisotropy
 
 func _on_exit_tree() -> void:
 	pass
 
 func _on_init() -> void:
-	body_color = body_color
-	body_intensity = body_intensity
-	body_size = body_size
-	mie_color = mie_color
-	mie_intensity = mie_intensity
-	mie_anisotropy = mie_anisotropy
+	pass
+	#body_color = body_color
+	#body_intensity = body_intensity
+	#body_size = body_size
+	#mie_color = mie_color
+	#mie_intensity = mie_intensity
+	#mie_anisotropy = mie_anisotropy
 	lighting_color = lighting_color
 	lighting_gradient = lighting_gradient
 	lighting_energy = lighting_energy

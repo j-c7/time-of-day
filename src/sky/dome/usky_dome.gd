@@ -38,6 +38,9 @@ var dome_layers: int = 4:
 var material: USkyMaterialBase = null:
 	get: return material
 	set(value):
+		if not is_instance_valid(value):
+			_dome_material = null
+			_dome_drawer.set_material(null)
 		material = value
 		if is_instance_valid(material):
 			if !material.material_is_valid():
@@ -47,7 +50,9 @@ var material: USkyMaterialBase = null:
 				)
 				material = null
 			else:
+				_dome_material = material.material
 				_set_sky_material_to_dome(material.material)
+				_update_celestials_data()
 #endregion
 
 #region Drawer
@@ -95,6 +100,18 @@ func _initialize_dome_params() -> void:
 	dome_visible = dome_visible
 	dome_layers = dome_layers
 
+func _update_celestials_data() -> void:
+	_on_suns_direction_changed()
+	_on_moons_direction_changed()
+	
+	for i in range(0, 3):
+		_on_suns_value_changed(i)
+		_on_suns_mie_value_changed(i)
+		_on_moons_mie_value_changed(i)
+	
+	for i in range(0, 4):
+		_on_moons_value_changed(i)
+
 func _changed_dome_mesh_quality(p_quality: int) -> void:
 	if not is_instance_valid(_dome_mesh):
 		return
@@ -110,7 +127,7 @@ func _changed_dome_mesh_quality(p_quality: int) -> void:
 				_dome_mesh.rings = 90
 
 func _set_sky_material_to_dome(p_material: ShaderMaterial) -> void:
-	_dome_material = p_material
+	_dome_drawer.set_material(p_material)
 
 func check_material_ready() -> bool:
 	if not is_instance_valid(material):
@@ -126,9 +143,11 @@ func add_sun(p_sun: USkySun) -> void:
 		return
 	_suns.push_back(p_sun)
 	var index = _suns.find(p_sun)
+	print(index)
 	_connect_suns_direction_changed(index)
 	_connect_suns_value_changed(index)
 	_connect_suns_mie_value_changed(index)
+	_update_celestials_data()
 
 func remove_sun(p_sun: USkySun) -> void:
 	var index = _suns.find(p_sun)
@@ -136,6 +155,11 @@ func remove_sun(p_sun: USkySun) -> void:
 	_disconnect_suns_value_changed(index)
 	_disconnect_suns_mie_value_changed(index)
 	_suns.erase(p_sun)
+	if _suns.size() == 0:
+		if is_instance_valid(material):
+			material.reset_sun_default_data()
+	
+	_update_celestials_data()
 
 # Direction
 func _connect_suns_direction_changed(p_index: int) -> void:
@@ -174,6 +198,7 @@ func add_moon(p_moon: USkyMoon) -> void:
 	_connect_moons_direction_changed(index)
 	_connect_moons_value_changed(index)
 	_connect_moons_mie_value_changed(index)
+	_update_celestials_data()
 
 func remove_moon(p_moon: USkyMoon) -> void:
 	var index = _moons.find(p_moon)
@@ -181,6 +206,10 @@ func remove_moon(p_moon: USkyMoon) -> void:
 	_disconnect_moons_value_changed(index)
 	_disconnect_moons_mie_value_changed(index)
 	_moons.erase(p_moon)
+	if _moons.size() == 0:
+		if is_instance_valid(material):
+			material.reset_moon_default_data()
+	_update_celestials_data()
 
 # Direction
 func _connect_moons_direction_changed(p_index: int) -> void:
@@ -213,7 +242,7 @@ func _disconnect_moons_mie_value_changed(p_index: int) -> void:
 #region Sun data
 # Prevent array bounds overflow
 func _get_suns_array_size(p_data_size: int) -> int:
-	return _suns.size() - p_data_size\
+	return clamp(_suns.size(), 0, p_data_size)\
 		if p_data_size < _suns.size() else _suns.size()
 
 func _on_suns_direction_changed() -> void:
@@ -272,7 +301,7 @@ func _on_suns_mie_value_changed(p_type: int) -> void:
 #region Moon Data
 # Prevent array bounds overflow
 func _get_moons_array_size(p_data_size: int) -> int:
-	return _moons.size() - p_data_size\
+	return clamp(_moons.size(), 0, p_data_size)\
 		if p_data_size < _moons.size() else _moons.size()
 
 func _on_moons_direction_changed() -> void:
@@ -282,6 +311,7 @@ func _on_moons_direction_changed() -> void:
 	var array_size = _get_moons_array_size(material.moons_data.direction.size())
 	for i in range(array_size):
 		material.moons_data.direction[i] = _moons[i].direction
+		material.moons_data.moon_phases_mul[i] = _moons[i].phases_mul
 	
 	material.update_moons_direction()
 	

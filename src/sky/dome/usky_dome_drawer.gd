@@ -44,10 +44,16 @@ func draw(p_world: World3D, p_mesh: Mesh, p_material: Material) -> void:
 	RS.instance_set_scenario(instance, p_world.scenario)
 	RS.instance_set_base(instance, p_mesh.get_rid())
 	RS.instance_set_transform(instance, _transform)
-	RS.instance_geometry_set_material_override(instance, p_material.get_rid())
+	RS.instance_geometry_set_material_override(instance, 
+		p_material.get_rid() if is_instance_valid(p_material) else RID())
+	
 	#RS.instance_set_extra_visibility_margin(instance, MAX_EXTRA_VISIBILITY_MARGIN)
 	RS.instance_set_custom_aabb(instance, CUSTOM_AABB)
 	RS.instance_geometry_set_cast_shadows_setting(instance, RS.SHADOW_CASTING_SETTING_OFF)
+
+func set_material(p_material: Material) -> void:
+	RS.instance_geometry_set_material_override(instance, 
+		p_material.get_rid() if is_instance_valid(p_material) else RID())
 
 func set_visible(p_value: bool) -> void:
 	RS.instance_set_visible(instance, p_value)
