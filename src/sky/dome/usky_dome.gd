@@ -254,6 +254,7 @@ func _on_suns_direction_changed() -> void:
 	for i in range(array_size):
 		material.suns_data.direction[i] = _suns[i].direction
 	
+	_on_moons_direction_changed()
 	material.update_suns_direction()
 
 func _on_suns_value_changed(p_type: int) -> void:
@@ -310,6 +311,9 @@ func _on_moons_direction_changed() -> void:
 		return
 	
 	var array_size = _get_moons_array_size(material.moons_data.direction.size())
+	if(array_size == 0):
+		return
+	
 	for i in range(array_size):
 		material.moons_data.direction[i] = _moons[i].direction
 		material.moons_data.moon_phases_mul[i] = _moons[i].phases_mul
