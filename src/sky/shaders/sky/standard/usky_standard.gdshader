@@ -8,6 +8,7 @@ varying vec3 v_world_pos;
 
 void vertex(){
 	vec4 vert =  vec4(VERTEX.xyz, 0.0);
+	vert*=1000000.0;
 	VERTEX = (MODELVIEW_MATRIX * vert).xyz;
 	POSITION = PROJECTION_MATRIX * MODELVIEW_MATRIX * vert;
 	POSITION.z = 0.0;
