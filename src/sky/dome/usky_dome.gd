@@ -139,8 +139,8 @@ func check_material_ready() -> bool:
 
 #region Sun Setup
 func add_sun(p_sun: USkySun) -> void:
-	if(_suns.any(func(p): return p == p_sun)):
-		return
+	if(_suns.has(p_sun)):
+		return 
 	_suns.push_back(p_sun)
 	var index = _suns.find(p_sun)
 	print(index)
@@ -191,7 +191,7 @@ func _disconnect_suns_mie_value_changed(p_index: int) -> void:
 
 #region Moon Setup
 func add_moon(p_moon: USkyMoon) -> void:
-	if(_moons.any(func(p): return p == p_moon)):
+	if(_moons.has(p_moon)):
 		return
 	_moons.push_back(p_moon)
 	var index = _moons.find(p_moon)
