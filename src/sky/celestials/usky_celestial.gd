@@ -19,6 +19,18 @@ signal value_changed(type)
 signal mie_value_changed(type)
 #endregion
 
+#region Direction
+@export_group("Direction")
+@export
+var use_global_direction: bool = false:
+	get: return use_global_direction
+	set(value):
+		use_global_direction = value
+		emit_signal(DIRECTION_CHANGED)
+
+#endregion
+
+
 #region Body
 @export_group("Body")
 @export
@@ -104,7 +116,7 @@ var lighting_energy_curve: Curve = null:
 #endregion
 
 var direction: Vector3:
-	get: return -(basis * Vector3.FORWARD)
+	get: return -((global_basis if use_global_direction else basis) * Vector3.FORWARD)
 
 var _parent
 var parent:
