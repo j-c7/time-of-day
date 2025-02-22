@@ -138,7 +138,7 @@ func check_material_ready() -> bool:
 	return true
 #endregion
 
-#region Sun Setup
+#region Add Removed Celestials
 func add_sun(p_sun: USkySun) -> void:
 	if(_suns.has(p_sun)):
 		return 
@@ -162,6 +162,30 @@ func remove_sun(p_sun: USkySun) -> void:
 	
 	_update_celestials_data()
 
+func add_moon(p_moon: USkyMoon) -> void:
+	if(_moons.has(p_moon)):
+		return
+	_moons.push_back(p_moon)
+	var index = _moons.find(p_moon)
+	_connect_moons_direction_changed(index)
+	_connect_moons_value_changed(index)
+	_connect_moons_mie_value_changed(index)
+	_update_celestials_data()
+
+func remove_moon(p_moon: USkyMoon) -> void:
+	var index = _moons.find(p_moon)
+	_disconnect_moons_direction_changed(index)
+	_disconnect_moons_value_changed(index)
+	_disconnect_moons_mie_value_changed(index)
+	_moons.erase(p_moon)
+	if _moons.size() == 0:
+		if is_instance_valid(material):
+			material.reset_moon_default_data()
+	
+	_update_celestials_data()
+#endregion
+
+#region Sun connection
 # Direction
 func _connect_suns_direction_changed(p_index: int) -> void:
 	if !_suns[p_index].direction_changed.is_connected(_on_suns_direction_changed):
@@ -190,28 +214,7 @@ func _disconnect_suns_mie_value_changed(p_index: int) -> void:
 		_suns[p_index].mie_value_changed.disconnect(_on_suns_mie_value_changed)
 #endregion
 
-#region Moon Setup
-func add_moon(p_moon: USkyMoon) -> void:
-	if(_moons.has(p_moon)):
-		return
-	_moons.push_back(p_moon)
-	var index = _moons.find(p_moon)
-	_connect_moons_direction_changed(index)
-	_connect_moons_value_changed(index)
-	_connect_moons_mie_value_changed(index)
-	_update_celestials_data()
-
-func remove_moon(p_moon: USkyMoon) -> void:
-	var index = _moons.find(p_moon)
-	_disconnect_moons_direction_changed(index)
-	_disconnect_moons_value_changed(index)
-	_disconnect_moons_mie_value_changed(index)
-	_moons.erase(p_moon)
-	if _moons.size() == 0:
-		if is_instance_valid(material):
-			material.reset_moon_default_data()
-	_update_celestials_data()
-
+#region Moon Conection
 # Direction
 func _connect_moons_direction_changed(p_index: int) -> void:
 	if !_moons[p_index].direction_changed.is_connected(_on_moons_direction_changed):
@@ -240,7 +243,7 @@ func _disconnect_moons_mie_value_changed(p_index: int) -> void:
 		_moons[p_index].mie_value_changed.disconnect(_on_moons_mie_value_changed)
 #endregion
 
-#region Sun data
+#region Suns direction
 # Prevent array bounds overflow
 func _get_suns_array_size(p_data_size: int) -> int:
 	return clamp(_suns.size(), 0, p_data_size)\
@@ -258,52 +261,71 @@ func _on_suns_direction_changed() -> void:
 	material.update_suns_direction()
 	
 	_update_moon_mie_intensity()
+#endregion
 
+#region Sun Values
 func _on_suns_value_changed(p_type: int) -> void:
 	if not check_material_ready():
 		return
-	
 	match(p_type):
 		USkyCelestial.BodyValueType.COLOR:
-			var array_size = _get_suns_array_size(material.suns_data.color.size())
-			for i in range(array_size):
-				material.suns_data.color[i] = _suns[i].body_color
-			material.update_suns_color()
+			_update_suns_color()
 		USkyCelestial.BodyValueType.INTENSITY:
-			var array_size = _get_suns_array_size(material.suns_data.intensity.size())
-			for i in range(array_size):
-				material.suns_data.intensity[i] = _suns[i].body_intensity
-			material.update_suns_intensity()
+			_update_suns_intensity()
 		USkyCelestial.BodyValueType.SIZE:
-			var array_size = _get_suns_array_size(material.suns_data.size.size())
-			for i in range(array_size):
-				material.suns_data.size[i] = _suns[i].body_size
-			material.update_suns_size()
+			_update_suns_size()
 
+func _update_suns_color() -> void:
+	var array_size = _get_suns_array_size(material.suns_data.color.size())
+	for i in range(array_size):
+		material.suns_data.color[i] = _suns[i].body_color
+	material.update_suns_color()
+
+func _update_suns_intensity() -> void:
+	var array_size = _get_suns_array_size(material.suns_data.intensity.size())
+	for i in range(array_size):
+		material.suns_data.intensity[i] = _suns[i].body_intensity
+	material.update_suns_intensity()
+
+func _update_suns_size() -> void:
+	var array_size = _get_suns_array_size(material.suns_data.size.size())
+	for i in range(array_size):
+		material.suns_data.size[i] = _suns[i].body_size
+	material.update_suns_size()
+#endregion
+
+#region Sun Mie.
 func _on_suns_mie_value_changed(p_type: int) -> void:
 	if not check_material_ready():
 		return
-
 	match(p_type):
 		USkyCelestial.MieValueType.COLOR:
-			var array_size = _get_suns_array_size(material.suns_data.mie_color.size())
-			for i in range(array_size):
-				material.suns_data.mie_color[i] = _suns[i].mie_color
-			material.update_suns_mie_color()
+			_update_suns_mie_color()
 		USkyCelestial.MieValueType.INTENSITY:
-			var array_size = _get_suns_array_size(material.suns_data.mie_intensity.size())
-			for i in range(array_size):
-				material.suns_data.mie_intensity[i] = _suns[i].mie_intensity
-			material.update_suns_mie_intensity()
+			_update_suns_mie_intensity()
 		USkyCelestial.MieValueType.ANISOTROPY:
-			var array_size = _get_suns_array_size(material.suns_data.mie_anisotropy.size())
-			for i in range(array_size):
-				material.suns_data.mie_anisotropy[i] = _suns[i].mie_anisotropy
-			material.update_suns_mie_anisotropy()
+			_update_suns_mie_anisotropy()
+
+func _update_suns_mie_color() -> void:
+	var array_size = _get_suns_array_size(material.suns_data.mie_color.size())
+	for i in range(array_size):
+		material.suns_data.mie_color[i] = _suns[i].mie_color
+	material.update_suns_mie_color()
+
+func _update_suns_mie_intensity() -> void:
+	var array_size = _get_suns_array_size(material.suns_data.mie_intensity.size())
+	for i in range(array_size):
+		material.suns_data.mie_intensity[i] = _suns[i].mie_intensity
+	material.update_suns_mie_intensity()
+
+func _update_suns_mie_anisotropy() -> void:
+	var array_size = _get_suns_array_size(material.suns_data.mie_anisotropy.size())
+	for i in range(array_size):
+		material.suns_data.mie_anisotropy[i] = _suns[i].mie_anisotropy
+	material.update_suns_mie_anisotropy()
 #endregion
 
-#region Moon Data
-# Prevent array bounds overflow
+#region Moons Direction
 func _get_moons_array_size(p_data_size: int) -> int:
 	return clamp(_moons.size(), 0, p_data_size)\
 		if p_data_size < _moons.size() else _moons.size()
@@ -328,50 +350,64 @@ func _on_moons_direction_changed() -> void:
 	
 	material.update_moons_matrix()
 	_update_moon_mie_intensity()
+#endregion
 
+#region Moons values
 func _on_moons_value_changed(p_type: int) -> void:
 	if not check_material_ready():
 		return
-	
 	match(p_type):
 		USkyMoon.BodyValueType.COLOR:
-			var array_size = _get_moons_array_size(material.moons_data.color.size())
-			for i in range(array_size):
-				material.moons_data.color[i] = _moons[i].body_color
-			material.update_moons_color()
+			_update_moons_color()
 		USkyMoon.BodyValueType.INTENSITY:
-			var array_size = _get_moons_array_size(material.moons_data.intensity.size())
-			for i in range(array_size):
-				material.moons_data.intensity[i] = _moons[i].body_intensity
-			material.update_moons_intensity()
+			_update_moons_intensity()
 		USkyMoon.BodyValueType.SIZE:
-			var array_size = _get_moons_array_size(material.moons_data.size.size())
-			for i in range(array_size):
-				material.moons_data.size[i] = _moons[i].body_size
-			material.update_moons_size()
+			_update_moons_size()
 		USkyMoon.BodyValueType.TEXTURE:
-			var array_size = _get_moons_array_size(material.moons_data.texture.size())
-			for i in range(array_size):
-				material.moons_data.texture[i] = _moons[i].texture
-			material.update_moons_texture()
+			_update_moons_texture()
 
+func _update_moons_color() -> void:
+	var array_size = _get_moons_array_size(material.moons_data.color.size())
+	for i in range(array_size):
+		material.moons_data.color[i] = _moons[i].body_color
+	material.update_moons_color()
+
+func _update_moons_intensity() -> void:
+	var array_size = _get_moons_array_size(material.moons_data.intensity.size())
+	for i in range(array_size):
+		material.moons_data.intensity[i] = _moons[i].body_intensity
+	material.update_moons_intensity()
+
+func _update_moons_size() -> void:
+	var array_size = _get_moons_array_size(material.moons_data.size.size())
+	for i in range(array_size):
+		material.moons_data.size[i] = _moons[i].body_size
+	material.update_moons_size()
+
+func _update_moons_texture() -> void:
+	var array_size = _get_moons_array_size(material.moons_data.texture.size())
+	for i in range(array_size):
+		material.moons_data.texture[i] = _moons[i].texture
+	material.update_moons_texture()
+#endregion
+
+#region Moons Mie
 func _on_moons_mie_value_changed(p_type: int) -> void:
 	if not check_material_ready():
 		return
-
 	match(p_type):
 		USkyMoon.MieValueType.COLOR:
-			var array_size = _get_moons_array_size(material.moons_data.mie_color.size())
-			for i in range(array_size):
-				material.moons_data.mie_color[i] = _moons[i].mie_color
-			material.update_moons_mie_color()
+			_update_moon_mie_color()
 		USkyMoon.MieValueType.INTENSITY:
 			_update_moon_mie_intensity()
 		USkyMoon.MieValueType.ANISOTROPY:
-			var array_size = _get_moons_array_size(material.moons_data.mie_anisotropy.size())
-			for i in range(array_size):
-				material.moons_data.mie_anisotropy[i] = _moons[i].mie_anisotropy
-			material.update_moons_mie_anisotropy()
+			_update_moon_mie_anisotropy()
+
+func _update_moon_mie_color() -> void:
+	var array_size = _get_moons_array_size(material.moons_data.mie_color.size())
+	for i in range(array_size):
+		material.moons_data.mie_color[i] = _moons[i].mie_color
+	material.update_moons_mie_color()
 
 func _update_moon_mie_intensity() -> void:
 	var array_size = _get_moons_array_size(material.moons_data.mie_intensity.size())
@@ -382,4 +418,9 @@ func _update_moon_mie_intensity() -> void:
 			material.moons_data.mie_intensity[i] = _moons[i].mie_intensity
 	material.update_moons_mie_intensity()
 
+func _update_moon_mie_anisotropy() -> void:
+	var array_size = _get_moons_array_size(material.moons_data.mie_anisotropy.size())
+	for i in range(array_size):
+		material.moons_data.mie_anisotropy[i] = _moons[i].mie_anisotropy
+	material.update_moons_mie_anisotropy()
 #endregion
