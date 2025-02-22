@@ -256,6 +256,8 @@ func _on_suns_direction_changed() -> void:
 	
 	_on_moons_direction_changed()
 	material.update_suns_direction()
+	
+	_update_moon_mie_intensity()
 
 func _on_suns_value_changed(p_type: int) -> void:
 	if not check_material_ready():
@@ -325,6 +327,7 @@ func _on_moons_direction_changed() -> void:
 		material.moons_data.matrix[i] = _moons[i].clamped_matrix
 	
 	material.update_moons_matrix()
+	_update_moon_mie_intensity()
 
 func _on_moons_value_changed(p_type: int) -> void:
 	if not check_material_ready():
@@ -363,13 +366,20 @@ func _on_moons_mie_value_changed(p_type: int) -> void:
 				material.moons_data.mie_color[i] = _moons[i].mie_color
 			material.update_moons_mie_color()
 		USkyMoon.MieValueType.INTENSITY:
-			var array_size = _get_moons_array_size(material.moons_data.mie_intensity.size())
-			for i in range(array_size):
-				material.moons_data.mie_intensity[i] = _moons[i].mie_intensity
-			material.update_moons_mie_intensity()
+			_update_moon_mie_intensity()
 		USkyMoon.MieValueType.ANISOTROPY:
 			var array_size = _get_moons_array_size(material.moons_data.mie_anisotropy.size())
 			for i in range(array_size):
 				material.moons_data.mie_anisotropy[i] = _moons[i].mie_anisotropy
 			material.update_moons_mie_anisotropy()
+
+func _update_moon_mie_intensity() -> void:
+	var array_size = _get_moons_array_size(material.moons_data.mie_intensity.size())
+	for i in range(array_size):
+		if _moons[i].enable_mie_phases:
+			material.moons_data.mie_intensity[i] = _moons[i].mie_intensity * _moons[i].phases_mul
+		else:
+			material.moons_data.mie_intensity[i] = _moons[i].mie_intensity
+	material.update_moons_mie_intensity()
+
 #endregion

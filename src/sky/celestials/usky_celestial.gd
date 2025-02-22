@@ -165,6 +165,7 @@ func _update_params() -> void:
 	_update_light_color()
 	_update_light_energy()
 	emit_signal(DIRECTION_CHANGED)
+	
 
 #region Light
 func _update_light_color() -> void:

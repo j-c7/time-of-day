@@ -18,6 +18,16 @@ const _DEFAULT_MOON_TEXTURE:= preload(
 )
 #endregion
 
+#region Mie
+@export
+var enable_mie_phases: bool = false:
+	get: return enable_mie_phases
+	set(value):
+		enable_mie_phases = value
+
+
+#endregion
+
 #region Body
 @export_group("Body")
 @export
