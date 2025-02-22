@@ -292,7 +292,7 @@ func update_moons_direction() -> void:
 #endregion
 
 #region Atmospheric scattering
-func get_sun_uMus(dir: Vector3) -> float:
+func get_celestial_uMus(dir: Vector3) -> float:
 	return 0.015 + (atan(max(dir.y, - 0.1975) * tan(1.386))
 		* 0.9090 + 0.74) * 0.5 * (0.96875);
 
@@ -355,11 +355,11 @@ func _set_beta_mie() -> void:
 
 func _set_sun_uMus() -> void:
 	RenderingServer.material_set_param(
-		material.get_rid(), SUN_UMUS_PARAM, get_sun_uMus(suns_data.direction[0])
+		material.get_rid(), SUN_UMUS_PARAM, get_celestial_uMus(suns_data.direction[0])
 	)
 	
 	RenderingServer.material_set_param(
-		refl_material.get_rid(), SUN_UMUS_PARAM, get_sun_uMus(suns_data.direction[0])
+		refl_material.get_rid(), SUN_UMUS_PARAM, get_celestial_uMus(suns_data.direction[0])
 	)
 	emit_changed()
 
@@ -405,9 +405,9 @@ func get_atm_night_intensity() -> float:
 	if !atm_enable_night_scattering:
 		ret = clamp(-suns_data.direction[0].y + 0.50, 0.0, 1.0)
 	else:
-		ret = clamp(moons_data.direction[0].y * get_atm_moon_phases_mul(), 0.0, 1.0)
+		ret = clamp(get_celestial_uMus(moons_data.direction[0]), 0.0, 1.0)
 
-	return ret * atm_night_intensity
+	return ret * atm_night_intensity * get_atm_moon_phases_mul()
 
 func get_atm_moon_phases_mul() -> float:
 	return moons_data.moon_phases_mul[0] if atm_enable_night_scattering else 1.0;
