@@ -118,7 +118,7 @@ func update_suns_color() -> void:
 	)
 	emit_changed()
 
-func update_suns_intensity() -> void:
+func update_suns_intensity(p_multiplier: float = 1.0) -> void:
 	for p in len(_suns_data.intensity):
 		print("SUN" + str(p) + " INTENSITY: " + str(_suns_data.intensity[p]))
 	

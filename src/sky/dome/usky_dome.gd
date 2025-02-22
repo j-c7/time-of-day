@@ -38,11 +38,12 @@ var dome_layers: int = 4:
 var material: USkyMaterialBase = null:
 	get: return material
 	set(value):
+		material = value
 		if not is_instance_valid(value):
 			_dome_material = null
 			_dome_drawer.set_material(null)
-		material = value
-		if is_instance_valid(material):
+		
+		else:
 			if !material.material_is_valid():
 				push_warning(
 					"this {material} is abstract resource class, please add valid material"
