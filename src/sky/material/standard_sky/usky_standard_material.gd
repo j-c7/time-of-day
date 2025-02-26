@@ -354,12 +354,21 @@ func _set_beta_mie() -> void:
 	emit_changed()
 
 func _set_sun_uMus() -> void:
+	if suns_data.direction.size() < 1:
+		return
+	#var dirSum: Vector3 = suns_data.direction.reduce(func(a,b): return a+b) \
+	#if suns_data.direction.size() < 2 else suns_data.direction[0]
+	
+	var acc:= Vector3.ZERO
+	for i in len(suns_data.direction):
+		acc += suns_data.direction[i] / suns_data.direction.size()
+	
 	RenderingServer.material_set_param(
-		material.get_rid(), SUN_UMUS_PARAM, get_celestial_uMus(suns_data.direction[0])
+		material.get_rid(), SUN_UMUS_PARAM, get_celestial_uMus(acc)
 	)
 	
 	RenderingServer.material_set_param(
-		refl_material.get_rid(), SUN_UMUS_PARAM, get_celestial_uMus(suns_data.direction[0])
+		refl_material.get_rid(), SUN_UMUS_PARAM, get_celestial_uMus(acc)
 	)
 	emit_changed()
 
@@ -388,29 +397,58 @@ func update_moons_mie_anisotropy() -> void:
 	emit_changed()
 
 func _set_atm_day_tint() -> void:
+	if suns_data.direction.size() < 1:
+		return
+	#var sunsSum: Vector3 = suns_data.direction.reduce(func(a,b): return a+b) \
+	#if suns_data.direction.size() < 2 else suns_data.direction[0]
+	
+	var acc:= Vector3.ZERO
+	for i in len(suns_data.direction):
+		acc += suns_data.direction[i] / suns_data.direction.size()
+	
 	RenderingServer.material_set_param(
 		material.get_rid(), DAY_TINT_PARAM,
-		atm_day_gradient.sample(USkyUtil.interpolate_by_above(suns_data.direction[0].y))
+		atm_day_gradient.sample(USkyUtil.interpolate_by_above(acc.y))
 		if is_instance_valid(atm_day_gradient) else Color.WHITE
 	)
 	
 	RenderingServer.material_set_param(
 		refl_material.get_rid(), DAY_TINT_PARAM,
-		atm_day_gradient.sample(USkyUtil.interpolate_by_above(suns_data.direction[0].y))
+		atm_day_gradient.sample(USkyUtil.interpolate_by_above(acc.y))
 		if is_instance_valid(atm_day_gradient) else Color.WHITE
 	)
 
 func get_atm_night_intensity() -> float:
+	if moons_data.direction.size() < 1:
+		return 1.0
+	
+	var acc := 0.0
+	for i in len(moons_data.direction):
+		acc += get_celestial_uMus(moons_data.direction[i] / moons_data.direction.size())
+		
 	var ret: float
 	if !atm_enable_night_scattering:
-		ret = clamp(-suns_data.direction[0].y + 0.50, 0.0, 1.0)
+		if _suns_data.direction.size() > 0:
+			var sunAcc: float
+			for i in len(suns_data.direction):
+				sunAcc += suns_data.direction[i].y / suns_data.direction.size()
+			ret = clamp(-sunAcc + 0.50, 0.0, 1.0)
 	else:
-		ret = clamp(get_celestial_uMus(moons_data.direction[0]), 0.0, 1.0)
+		ret = acc
 
 	return ret * atm_night_intensity * get_atm_moon_phases_mul()
 
 func get_atm_moon_phases_mul() -> float:
-	return moons_data.moon_phases_mul[0] if atm_enable_night_scattering else 1.0;
+	if moons_data.direction.size() < 1:
+		return 1.0
+	
+	if atm_enable_night_scattering:
+		var acc: float = 0.0
+		for i in len(moons_data.direction):
+			acc += moons_data.moon_phases_mul[i] / moons_data.moon_phases_mul.size()
+		return acc
+	
+	return 1.0;
 
 func _set_atm_night_tint() -> void:
 	var tint:= atm_night_tint * get_atm_night_intensity()

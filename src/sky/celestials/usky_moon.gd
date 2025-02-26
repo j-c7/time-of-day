@@ -59,22 +59,24 @@ var enable_moon_phases: bool = false:
 		_update_light_energy()
 
 @export
-var _sun: USkySun = null:
-	get: return _sun
-	set(value):
-		if is_instance_valid(value):
-			_sun = value
-			_connect_sun_signals()
-		else:
-			_disconnect_sun_signals()
-			_sun = value
+var _suns: Array[USkySun]
 #endregion
 
 var phases_mul: float:
-	get: 
-		if is_instance_valid(_sun):
-			return clamp(-_sun.direction.dot(direction) + 0.50, 0.0, 1.0)
+	get:
+		if _suns.any(func(x): return is_instance_valid(x)):
+			return _get_phases_mul()
 		return 1.0
+
+func _get_phases_mul() -> float:
+	if _suns.size() < 1:
+		return 1.0
+	
+	var acc:= Vector3.ZERO
+	for i in len(_suns):
+		acc += _suns[i].direction / _suns.size()
+	
+	return clamp(-acc.dot(direction) + 0.50, 0.0, 1.0)
 
 var clamped_matrix: Basis:
 	get: return Basis(
@@ -98,11 +100,16 @@ func _init() -> void:
 	texture = texture
 	enable_moon_phases = enable_moon_phases
 
+#func _notification(what: int) -> void:
+	#if what == NOTIFICATION_PREDELETE:
+		#_disconnect_suns_list_changed()
+
 func _on_enter_tree() -> void:
 	super()
 	_add_to_parent()
 
 func _on_exit_tree() -> void:
+	_suns = []
 	_remove_from_parent()
 
 func _validate_property(property: Dictionary) -> void:
@@ -114,8 +121,8 @@ func _get_light_energy() -> float:
 	if enable_moon_phases:
 		energy *= phases_mul
 	
-	if is_instance_valid(_sun):
-		var fade: float = (1.0 - _sun.direction.y) - 0.5
+	if _suns.size() > 0 && is_instance_valid(_suns[0]):
+		var fade: float = (1.0 - _suns[0].direction.y) - 0.5
 		return energy * _SUN_MOON_CURVE_FADE.sample_baked(fade)
 	
 	return energy
@@ -123,11 +130,17 @@ func _get_light_energy() -> float:
 func _on_parented() -> void:
 	super()
 	_add_to_parent()
+	_get_suns()
 
 func _add_to_parent() -> void:
 	if is_instance_valid(parent):
 		if parent.has_method(&"add_moon"):
 			parent.add_moon(self)
+
+func _get_suns() -> void:
+	if is_instance_valid(parent):
+		if  parent.has_method(&"get_all_suns"):
+			_suns = parent.get_all_suns()
 
 func _remove_from_parent() -> void:
 	if is_instance_valid(parent):
@@ -135,12 +148,25 @@ func _remove_from_parent() -> void:
 			parent.remove_moon(self)
 
 func _connect_sun_signals() -> void:
-	if !_sun.direction_changed.is_connected(_on_sun_direction_changed):
-		_sun.direction_changed.connect(_on_sun_direction_changed)
+	for s in len(_suns):
+		if !_suns[s].direction_changed.is_connected(_on_sun_direction_changed):
+			_suns[s].direction_changed.connect(_on_sun_direction_changed)
 
 func _disconnect_sun_signals() -> void:
-	if _sun.direction_changed.is_connected(_on_sun_direction_changed):
-		_sun.direction_changed.disconnect(_on_sun_direction_changed)
+	for s in len(_suns):
+		if _suns[s].direction_changed.is_connected(_on_sun_direction_changed):
+			_suns[s].direction_changed.disconnect(_on_sun_direction_changed)
 
 func _on_sun_direction_changed() -> void:
 	_update_light_energy()
+
+func _connect_suns_list_changed() -> void:
+	if !parent.suns_list_changed.is_connected(_on_suns_list_changed):
+		parent.suns_list_changed.connect(_on_suns_list_changed)
+
+func _disconnect_suns_list_changed() -> void:
+	if parent.suns_list_changed.is_connected(_on_suns_list_changed):
+		parent.suns_list_changed.disconnect(_on_suns_list_changed)
+
+func _on_suns_list_changed() -> void:
+	_get_suns()

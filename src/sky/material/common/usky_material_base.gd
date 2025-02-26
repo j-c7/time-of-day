@@ -27,6 +27,9 @@ const MOON_MIE_INTENSITY_PARAM:= &"atm_moon_mie_intensity"
 const MOON_MIE_ANISOTROPY_PARAM:= &"atm_moon_mie_anisotropy"
 #endregion
 
+const SUNS_SIZE:= 4
+const MOONS_SIZE:= 4
+
 var _material:= ShaderMaterial.new()
 var material: ShaderMaterial:
 	get: return _material
@@ -54,18 +57,17 @@ func material_is_valid() -> bool:
 	return false
 
 #region Setup
-
 func reset_sun_default_data() -> void:
 	_suns_data.clear_data()
-	_setup_suns_params_array_size(1)
+	_setup_suns_params_array_size(SUNS_SIZE)
 
 func reset_moon_default_data() -> void:
 	_moons_data.clear_data()
-	_setup_moons_params_array_size(1)
+	_setup_moons_params_array_size(MOONS_SIZE)
 
 func _setup_data_array_size() -> void:
-	_setup_suns_params_array_size(1)
-	_setup_moons_params_array_size(1)
+	_setup_suns_params_array_size(SUNS_SIZE)
+	_setup_moons_params_array_size(MOONS_SIZE)
 
 func _setup_suns_params_array_size(p_size: int) -> void:
 	for i in range(p_size):
@@ -93,9 +95,6 @@ func _setup_moons_params_array_size(p_size: int) -> void:
 
 #region Update Suns
 func update_suns_direction() -> void:
-	#for p in len(_suns_data.direction):
-		#print("SUN" + str(p) + " DIRECTION: " + str(_suns_data.direction[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), SUN_DIRECTION_PARAM, _suns_data.direction
 	)
@@ -106,9 +105,6 @@ func update_suns_direction() -> void:
 	emit_changed()
 
 func update_suns_color() -> void:
-	for p in len(_suns_data.color):
-		print("SUN" + str(p) + " COLOR: " + str(_suns_data.color[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), SUN_COLOR_PARAM, _suns_data.color
 	)
@@ -119,9 +115,6 @@ func update_suns_color() -> void:
 	emit_changed()
 
 func update_suns_intensity() -> void:
-	for p in len(_suns_data.intensity):
-		print("SUN" + str(p) + " INTENSITY: " + str(_suns_data.intensity[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), SUN_INTENSITY_PARAM, _suns_data.intensity
 	)
@@ -132,9 +125,6 @@ func update_suns_intensity() -> void:
 	emit_changed()
 
 func update_suns_size() -> void:
-	for p in len(_suns_data.size):
-		print("SUN" + str(p) + " SIZE: " + str(_suns_data.size[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), SUN_SIZE_PARAM, _suns_data.size
 	)
@@ -145,9 +135,6 @@ func update_suns_size() -> void:
 	emit_changed()
 
 func update_suns_mie_color() -> void:
-	for p in len(_suns_data.mie_color):
-		print("SUN" + str(p) + " MIE COLOR: " + str(_suns_data.mie_color[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), SUN_MIE_COLOR_PARAM, _suns_data.mie_color
 	)
@@ -158,9 +145,6 @@ func update_suns_mie_color() -> void:
 	emit_changed()
 
 func update_suns_mie_intensity() -> void:
-	for p in len(_suns_data.mie_intensity):
-		print("SUN" + str(p) + " MIE INTENSITY: " + str(_suns_data.mie_intensity[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), SUN_MIE_INTENSITY_PARAM, _suns_data.mie_intensity
 	)
@@ -171,9 +155,6 @@ func update_suns_mie_intensity() -> void:
 	emit_changed()
 
 func update_suns_mie_anisotropy() -> void:
-	for p in len(_suns_data.mie_anisotropy):
-		print("SUN" + str(p) + " MIE ANISOTROPY: " + str(_suns_data.mie_anisotropy[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), SUN_MIE_ANISOTROPY_PARAM, _suns_data.mie_anisotropy
 	)
@@ -186,9 +167,6 @@ func update_suns_mie_anisotropy() -> void:
 
 #region Update Moons
 func update_moons_direction() -> void:
-	for p in len(_moons_data.direction):
-		print("MOON" + str(p) + " DIRECTION: " + str(_moons_data.direction[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), MOON_DIRECTION_PARAM, _moons_data.direction
 	)
@@ -199,9 +177,6 @@ func update_moons_direction() -> void:
 	emit_changed()
 
 func update_moons_matrix() -> void:
-	for p in len(_moons_data.matrix):
-		print("MOON" + str(p) + " MATRIX: " + str(_moons_data.matrix[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), MOON_MATRIX_PARAM, _moons_data.matrix
 	)
@@ -212,9 +187,6 @@ func update_moons_matrix() -> void:
 	emit_changed()
 
 func update_moons_color() -> void:
-	for p in len(_moons_data.color):
-		print("MOON" + str(p) + " COLOR: " + str(_moons_data.color[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), MOON_COLOR_PARAM, _moons_data.color
 	)
@@ -225,9 +197,6 @@ func update_moons_color() -> void:
 	emit_changed()
 
 func update_moons_intensity() -> void:
-	for p in len(_moons_data.intensity):
-		print("MOON" + str(p) + " INTENSITY: " + str(_moons_data.intensity[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), MOON_INTENSITY_PARAM, _moons_data.intensity
 	)
@@ -238,9 +207,6 @@ func update_moons_intensity() -> void:
 	emit_changed()
 
 func update_moons_size() -> void:
-	for p in len(_moons_data.size):
-		print("MOON" + str(p) + " SIZE: " + str(_moons_data.size[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(),MOON_SIZE_PARAM, _moons_data.size
 	)
@@ -251,9 +217,6 @@ func update_moons_size() -> void:
 	emit_changed()
 
 func update_moons_texture() -> void:
-	for p in len(_moons_data.texture):
-		print("MOON" + str(p) + " TEXTURE: " + str(_moons_data.texture[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(),MOON_TEXTURE_PARAM, _moons_data.texture
 	)
@@ -264,9 +227,6 @@ func update_moons_texture() -> void:
 	emit_changed()
 
 func update_moons_mie_color() -> void:
-	for p in len(_moons_data.mie_color):
-		print("MOON" + str(p) + " MIE COLOR: " + str(_moons_data.mie_color[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), MOON_MIE_COLOR_PARAM, _moons_data.mie_color
 	)
@@ -277,9 +237,6 @@ func update_moons_mie_color() -> void:
 	emit_changed()
 
 func update_moons_mie_intensity() -> void:
-	for p in len(_moons_data.mie_intensity):
-		print("MOON" + str(p) + " MIE INTENSITY: " + str(_moons_data.mie_intensity[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), MOON_MIE_INTENSITY_PARAM, _moons_data.mie_intensity
 	)
@@ -290,9 +247,6 @@ func update_moons_mie_intensity() -> void:
 	emit_changed()
 
 func update_moons_mie_anisotropy() -> void:
-	for p in len(_moons_data.mie_anisotropy):
-		print("MOON" + str(p) + " MIE ANISOTROPY: " + str(_moons_data.mie_anisotropy[p]))
-	
 	RenderingServer.material_set_param(
 		material.get_rid(), MOON_MIE_ANISOTROPY_PARAM, _moons_data.mie_anisotropy
 	)

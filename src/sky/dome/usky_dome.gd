@@ -75,6 +75,9 @@ var _moons: Array[USkyMoon]:
 	get: return _moons
 	set(value):
 		_moons = value
+
+signal sun_list_changed()
+signal moon_list_changed()
 #endregion
 
 #region Godot
@@ -149,6 +152,7 @@ func add_sun(p_sun: USkySun) -> void:
 	_connect_suns_value_changed(index)
 	_connect_suns_mie_value_changed(index)
 	_update_celestials_data()
+	emit_signal(&"sun_list_changed")
 
 func remove_sun(p_sun: USkySun) -> void:
 	var index = _suns.find(p_sun)
@@ -161,6 +165,10 @@ func remove_sun(p_sun: USkySun) -> void:
 			material.reset_sun_default_data()
 	
 	_update_celestials_data()
+	emit_signal(&"sun_list_changed")
+
+func get_all_suns() -> Array[USkySun]:
+	return _suns
 
 func add_moon(p_moon: USkyMoon) -> void:
 	if(_moons.has(p_moon)):
@@ -171,6 +179,7 @@ func add_moon(p_moon: USkyMoon) -> void:
 	_connect_moons_value_changed(index)
 	_connect_moons_mie_value_changed(index)
 	_update_celestials_data()
+	emit_signal(&"moon_list_changed")
 
 func remove_moon(p_moon: USkyMoon) -> void:
 	var index = _moons.find(p_moon)
@@ -183,6 +192,10 @@ func remove_moon(p_moon: USkyMoon) -> void:
 			material.reset_moon_default_data()
 	
 	_update_celestials_data()
+	emit_signal(&"moon_list_changed")
+
+func get_all_moons() -> Array[USkyMoon]:
+	return _moons
 #endregion
 
 #region Sun connection

@@ -35,13 +35,13 @@ float miePhasePartial(float mu, vec3 partial){
 
 float miePhase(float mu, float g){
 	float g2 = g*g;
-	return kPI4 * ((1.0 - g2) / (2.0 + g2)) * 
+	return kPI4 * ((1.0 - g2) / (2.0 + g2)) *
 		(pow((1.0 + g2) - (2.0 * g) * mu, -1.5));
 }
 
 float miePhaseSimplified(float mu, float g){
 	float g2 = g*g;
-	return kPI4 * (1.0 - g2) * 
+	return kPI4 * (1.0 - g2) *
 		(pow((1.0 + g2) - (2.0 * g) * mu, -1.5));
 }
 
@@ -61,28 +61,28 @@ vec3 atmosphericScattering(vec3 pos, vec3 horizonBlend){
 	vec3 scatter = vec3(0.0);
 	vec3 sr, sm;
 	opticalDepth(pos.y+horizon_level, sr, sm);
-	
+
 	vec3 betaMie = atm_beta_mie;
 	vec3 betaRay = atm_beta_ray * atm_thickness;
-	
+
 	float sunMus = sun_uMuS - 0.4;
 	float sunset = mix(sunMus, sunMus * 0.05, atm_thickness - 1.0);
 	sunset = saturate(sunset);
-	
+
 	// Paper
 	vec3 extinction = saturate(exp(-betaRay * sr + betaMie * sm));
-	
+
 	// Hack
 	vec3 extincH = (1.0 -(extinction * 0.75)) * sr * 0.00002;
 	vec3 finalExtc = mix((1.0-extinction), extinction * extincH, 1.0-sunset);
-	
+
 	float sunMu = dot(sun_direction[0], pos);
 	float rayleighPhase = rayleighPhase(sunMu);
 
 	vec3 BRT = betaRay * rayleighPhase ;
-	vec3 BMT = betaMie * miePhasePartial(sunMu, 
+	vec3 BMT = betaMie * miePhasePartial(sunMu,
 		atm_sun_partial_mie_phase) * horizonBlend;
-		
+
 	BMT *= atm_sun_mie_intensity[0] * atm_sun_mie_color[0].rgb;
 	vec3 BRMT = (BRT+BMT) / (betaRay + betaMie);
 	BRMT = mix(BRMT, BRMT * (1.0 - extinction), atm_darkness);
@@ -95,9 +95,9 @@ vec3 atmosphericScattering(vec3 pos, vec3 horizonBlend){
 	vec3 nLin = (1.0 - extinction) * atm_night_tint.rgb;
 	nLin += miePhasePartial(moonMu, atm_moon_partial_mie_phase)
 		* atm_moon_mie_color[0].rgb * (atm_moon_mie_intensity[0] * 0.001) * horizonBlend;
-	
+
 	scatter = Lin + nLin;
-	
+
 	return scatter;
 }
 
