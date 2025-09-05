@@ -2,7 +2,7 @@
 ToD plugin for godot 4.
 ---------------------------------------------
 > [!WARNING]
-> ARCHIVED. New Repo: https://github.com/j-c7/universal-sky
+> ARCHIVED. New Repo: https://github.com/SourceOnFireStudio/universal-sky
 ---------------------------------------------
 
 ![Captura desde 2023-10-15 13-02-41](https://github.com/broken-kernel/time-of-day/assets/73777890/4309dccf-da4e-433f-a012-5f002e292f0c)
